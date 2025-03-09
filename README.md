@@ -30,16 +30,35 @@ npm install -g github:adejaimejr/chrome-mcp-server
 chrome-mcp-server
 ```
 
-### Opção 3: Instalar a partir do npm
+### Opção 3: Instalar a partir do npm (se publicado)
 
-Se o pacote estiver publicado no npm, você pode usar:
+Se você publicar este pacote no npm, poderá usá-lo assim:
 
 ```bash
+# Publicar no npm (uma única vez)
+npm login
+npm publish
+
+# Depois de publicado, usar com:
 # No Windows
 cmd /c npx chrome-mcp-server
 
 # No Linux/Mac
 npx chrome-mcp-server
+```
+
+Para publicar com um escopo (como @adejaimejr/chrome-mcp-server):
+
+```bash
+# Modificar o nome no package.json para "@adejaimejr/chrome-mcp-server"
+npm publish --access public
+
+# Depois de publicado, usar com:
+# No Windows
+cmd /c npx @adejaimejr/chrome-mcp-server
+
+# No Linux/Mac
+npx @adejaimejr/chrome-mcp-server
 ```
 
 ## Configuração no Cursor
@@ -56,6 +75,17 @@ Para configurar o Cursor para usar este servidor:
      - Linux/Mac: `npx github:adejaimejr/chrome-mcp-server`
 
 **Importante**: O servidor detecta automaticamente quando está sendo executado pelo Cursor e entra em modo MCP, suprimindo mensagens de log que podem interferir na comunicação.
+
+### Nota sobre formatos de comando
+
+Existem diferentes formatos para referenciar pacotes npm:
+
+- `npx github:adejaimejr/chrome-mcp-server`: Instala diretamente do GitHub
+- `npx chrome-mcp-server`: Instala do registro npm (requer publicação prévia)
+- `npx @adejaimejr/chrome-mcp-server`: Instala um pacote com escopo do npm (requer publicação prévia)
+- `npx @adejaimejr/chrome-mcp-server@1.0.0`: Especifica uma versão exata
+
+O formato usado pelo @agentdeskai/browser-tools-mcp (`npx @agentdeskai/browser-tools-mcp@1.1.0`) indica que o pacote está publicado no npm com um escopo e especifica a versão 1.1.0.
 
 ## Solução de Problemas
 
