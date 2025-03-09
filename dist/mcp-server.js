@@ -12,15 +12,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Verificar se estamos sendo executados pelo Cursor MCP
+// Detectar automaticamente o ambiente Cursor
 const isMCPMode = process.argv.includes('--mcp') || 
                   process.env.MCP_MODE === 'true' ||
-                  process.env.CURSOR_MCP === 'true';
+                  process.env.CURSOR_MCP === 'true' ||
+                  process.title.includes('Cursor');
 
-// Função de log que só exibe mensagens quando não estiver em modo MCP
+// Função de log que SEMPRE usa JSON para saída no console
 const log = (...args) => {
-  if (!isMCPMode) {
-    console.log(...args);
-  }
+  // Sempre enviar logs como JSON válido
+  console.log(JSON.stringify({ 
+    type: "log", 
+    message: args.join(' '),
+    timestamp: new Date().toISOString()
+  }));
+};
+
+// Função para erros que SEMPRE usa JSON para saída no console
+const logError = (...args) => {
+  console.error(JSON.stringify({ 
+    type: "error", 
+    message: args.join(' '),
+    timestamp: new Date().toISOString()
+  }));
 };
 
 const app = express();
@@ -176,14 +190,12 @@ async function startServer() {
     
     if (available) {
       server.listen(currentPort, () => {
-        // Sempre enviar a porta em formato JSON para o Cursor capturar
-        console.log(JSON.stringify({ port: currentPort, status: "running" }));
-        
-        // Logs adicionais apenas se não estiver em modo MCP
-        if (!isMCPMode) {
-          log(`Servidor MCP rodando em http://localhost:${currentPort}`);
-          log('Aguardando conexões...');
-        }
+        // SEMPRE enviar JSON válido para o console
+        console.log(JSON.stringify({ 
+          status: "running", 
+          port: currentPort,
+          timestamp: new Date().toISOString()
+        }));
       });
       return;
     }
@@ -193,12 +205,19 @@ async function startServer() {
     attempts++;
   }
   
-  // Erro em formato JSON para o Cursor
-  console.error(JSON.stringify({ 
-    error: `Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.` 
-  }));
+  logError(`Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.`);
   process.exit(1);
 }
+
+// Capturar erros não tratados e enviar como JSON
+process.on('uncaughtException', (err) => {
+  logError('Erro não tratado:', err.message);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logError('Promessa rejeitada não tratada:', reason);
+});
 
 // Iniciar o servidor com tratamento de portas
 startServer();
