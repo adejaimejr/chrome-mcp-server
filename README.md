@@ -91,6 +91,33 @@ O formato usado pelo @agentdeskai/browser-tools-mcp (`npx @agentdeskai/browser-t
 
 Se você encontrar o erro "Failed to create client", tente uma das seguintes soluções:
 
+### Solução Mais Simples e Garantida
+
+Clone o repositório localmente e use o caminho direto para o arquivo executável:
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/adejaimejr/chrome-mcp-server.git
+
+# 2. Entre no diretório
+cd chrome-mcp-server
+
+# 3. Instale as dependências
+npm install
+
+# 4. Construa o executável
+npm run build
+
+# 5. Configure no Cursor com o caminho absoluto para o arquivo mcp-server.js
+# Exemplo no Windows:
+C:/caminho/para/chrome-mcp-server/dist/mcp-server.js
+
+# Exemplo no Linux/Mac:
+/caminho/completo/para/chrome-mcp-server/dist/mcp-server.js
+```
+
+Esta abordagem elimina problemas com o npm e garante que você está usando exatamente o código do repositório.
+
 ### Solução 1: Instalar globalmente e usar o caminho completo
 
 ```bash
