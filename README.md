@@ -124,6 +124,10 @@ Benefícios:
 
 O servidor agora sempre envia respostas em formato JSON válido, mesmo sem o parâmetro `--mcp`. Isso resolve o erro `Unexpected token 'A', "Aguardando"... is not valid JSON` que podia ocorrer na configuração do Cursor.
 
+### 3. Script de Build Compatível com Windows
+
+O script de build agora é compatível com Windows e Linux/Mac, usando o Node.js para criar diretórios e copiar arquivos em vez de comandos específicos do sistema operacional. Isso resolve o erro `mkdir -p` que ocorria ao executar `npm run build` no Windows.
+
 ## Resolução de Problemas
 
 ### Erro: "Falha ao analisar a resposta JSON" ou "Unexpected token... is not valid JSON"
@@ -149,6 +153,16 @@ Se ainda encontrar problemas:
    # Linux/Mac
    PORT=3001 node /caminho/para/mcp-server.js
    ```
+
+### Erro: "mkdir -p" ou "chmod +x" no Windows
+
+Se você encontrar erros relacionados a comandos Unix ao executar `npm run build` no Windows:
+
+1. Certifique-se de que está usando a versão mais recente do repositório com o script de build compatível com Windows
+2. Execute `git pull` para obter as últimas atualizações
+3. Se o problema persistir, você pode criar manualmente o arquivo:
+   - Copie o conteúdo de `src/index.js` para um novo arquivo `dist/mcp-server.js`
+   - Adicione `#!/usr/bin/env node` no início do arquivo
 
 ## Como Funciona
 
