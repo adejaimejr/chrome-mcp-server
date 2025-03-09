@@ -74,9 +74,9 @@ npx github:adejaimejr/chrome-mcp-server
 
 **Nota**: A partir da versão mais recente, o parâmetro `--mcp` não é mais necessário, pois o servidor agora detecta automaticamente quando está sendo executado pelo Cursor.
 
-### Solução Mais Simples e Garantida
+### Solução Específica para Instalação Local
 
-Para o seu caso específico, com o arquivo em `C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server\dist\mcp-server.js`, configure o Cursor com o seguinte comando:
+Se você já tem o código em seu computador (como no caminho `C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server`), use o caminho direto para o arquivo executável:
 
 ```
 node C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server\dist\mcp-server.js
@@ -84,7 +84,9 @@ node C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server\dist\mcp-server.js
 
 Importante: No Windows, você pode usar tanto barras invertidas (`\`) quanto barras normais (`/`) no caminho.
 
-Clone o repositório localmente e use o caminho direto para o arquivo executável:
+### Passo a Passo para Instalação Local
+
+Se você preferir clonar o repositório e usar localmente:
 
 ```bash
 # 1. Clone o repositório
@@ -101,10 +103,10 @@ npm run build
 
 # 5. Configure o Cursor com o caminho absoluto para o arquivo mcp-server.js
 # Exemplo no Windows:
-# node C:\caminho\para\chrome-mcp-server\dist\mcp-server.js
+# node C:\caminho\completo\para\chrome-mcp-server\dist\mcp-server.js
 
 # Exemplo no Linux/Mac:
-# node /caminho/para/chrome-mcp-server/dist/mcp-server.js
+# node /caminho/completo/para/chrome-mcp-server/dist/mcp-server.js
 ```
 
 ## Novidades na Versão Mais Recente
@@ -130,7 +132,7 @@ Se você encontrar um erro relacionado a JSON inválido:
 
 1. Certifique-se de que está usando a versão mais recente do servidor
 2. Atualize o repositório local com `git pull` e reconstrua com `npm run build`
-3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Mais Simples e Garantida"
+3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Específica para Instalação Local"
 
 ### Erro: "EADDRINUSE: address already in use"
 
