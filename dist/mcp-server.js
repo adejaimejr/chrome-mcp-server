@@ -1,5 +1,75 @@
 #!/usr/bin/env node
 
+// FORÇAR MODO MCP PARA GARANTIR QUE TUDO SEJA JSON
+process.env.MCP_MODE = 'true';
+
+// INTERCEPTAR STDOUT E STDERR DIRETAMENTE
+// Isso garante que TODA saída, incluindo mensagens antes da inicialização do app, seja em JSON
+const originalStdoutWrite = process.stdout.write;
+const originalStderrWrite = process.stderr.write;
+
+// Sobrescrever process.stdout.write para garantir que toda saída seja JSON válido
+process.stdout.write = function(chunk, encoding, callback) {
+  try {
+    // Converter para string se não for
+    let strChunk = typeof chunk === 'string' ? chunk : chunk.toString();
+    
+    // Verificar se já é JSON válido
+    if (strChunk.trim().startsWith('{') && strChunk.trim().endsWith('}')) {
+      // Se parece ser JSON, apenas passar adiante
+      return originalStdoutWrite.apply(process.stdout, arguments);
+    } else {
+      // Envolver em JSON e adicionar uma nova linha
+      return originalStdoutWrite.call(
+        process.stdout, 
+        JSON.stringify({ message: strChunk.trim() }) + '\n',
+        encoding,
+        callback
+      );
+    }
+  } catch (e) {
+    // Se algo der errado, pelo menos garantir que a saída seja JSON
+    return originalStdoutWrite.call(
+      process.stdout,
+      JSON.stringify({ error: "Erro ao processar saída", message: String(chunk) }) + '\n',
+      encoding,
+      callback
+    );
+  }
+};
+
+// Sobrescrever process.stderr.write para garantir que toda saída de erro seja JSON válido
+process.stderr.write = function(chunk, encoding, callback) {
+  try {
+    // Converter para string se não for
+    let strChunk = typeof chunk === 'string' ? chunk : chunk.toString();
+    
+    // Verificar se já é JSON válido
+    if (strChunk.trim().startsWith('{') && strChunk.trim().endsWith('}')) {
+      // Se parece ser JSON, apenas passar adiante
+      return originalStderrWrite.apply(process.stderr, arguments);
+    } else {
+      // Envolver em JSON e adicionar uma nova linha
+      return originalStderrWrite.call(
+        process.stderr, 
+        JSON.stringify({ error: strChunk.trim() }) + '\n',
+        encoding,
+        callback
+      );
+    }
+  } catch (e) {
+    // Se algo der errado, pelo menos garantir que a saída seja JSON
+    return originalStderrWrite.call(
+      process.stderr,
+      JSON.stringify({ error: "Erro ao processar erro", message: String(chunk) }) + '\n',
+      encoding,
+      callback
+    );
+  }
+};
+
+// AGORA CONTINUA O RESTO DO CÓDIGO
+
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
@@ -8,68 +78,12 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import net from 'net';
 
-// Interceptar console.log para garantir que todas as saídas sejam JSON válido
-const originalConsoleLog = console.log;
-console.log = function() {
-  // Converter argumentos para string
-  const args = Array.from(arguments).map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
-  
-  // Se já for um JSON válido, enviar como está
-  if (args.trim().startsWith('{') && args.trim().endsWith('}')) {
-    originalConsoleLog(args);
-  } else {
-    // Caso contrário, envolver em um objeto JSON
-    originalConsoleLog(JSON.stringify({ message: args }));
-  }
-};
-
-// Interceptar console.error para garantir que todas as saídas de erro sejam JSON válido
-const originalConsoleError = console.error;
-console.error = function() {
-  // Converter argumentos para string
-  const args = Array.from(arguments).map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join(' ');
-  
-  // Se já for um JSON válido, enviar como está
-  if (args.trim().startsWith('{') && args.trim().endsWith('}')) {
-    originalConsoleError(args);
-  } else {
-    // Caso contrário, envolver em um objeto JSON
-    originalConsoleError(JSON.stringify({ error: args }));
-  }
-};
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Verificar se estamos sendo executados pelo Cursor MCP
 // Detectar automaticamente o ambiente Cursor
-const isMCPMode = process.argv.includes('--mcp') || 
-                  process.env.MCP_MODE === 'true' ||
-                  process.env.CURSOR_MCP === 'true' ||
-                  process.title.includes('Cursor');
-
-// Função de log que SEMPRE usa JSON para saída no console
-const log = (...args) => {
-  // Sempre enviar logs como JSON válido
-  console.log(JSON.stringify({ 
-    type: "log", 
-    message: args.join(' '),
-    timestamp: new Date().toISOString()
-  }));
-};
-
-// Função para erros que SEMPRE usa JSON para saída no console
-const logError = (...args) => {
-  console.error(JSON.stringify({ 
-    type: "error", 
-    message: args.join(' '),
-    timestamp: new Date().toISOString()
-  }));
-};
+const isMCPMode = true; // FORÇAR SEMPRE MODO MCP
 
 const app = express();
 const server = http.createServer(app);
@@ -190,10 +204,10 @@ app.post('/api/chrome-extension/data', (req, res) => {
 
 // Configuração do Socket.IO
 io.on('connection', (socket) => {
-  log('Cliente conectado:', socket.id);
+  console.log(JSON.stringify({ event: 'connection', clientId: socket.id }));
   
   socket.on('disconnect', () => {
-    log('Cliente desconectado:', socket.id);
+    console.log(JSON.stringify({ event: 'disconnect', clientId: socket.id }));
   });
 });
 
@@ -234,23 +248,32 @@ async function startServer() {
       return;
     }
     
-    log(`Porta ${currentPort} já está em uso, tentando próxima...`);
+    console.log(JSON.stringify({ message: `Porta ${currentPort} já está em uso, tentando próxima...` }));
     currentPort++;
     attempts++;
   }
   
-  logError(`Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.`);
+  console.error(JSON.stringify({ 
+    error: `Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.` 
+  }));
   process.exit(1);
 }
 
 // Capturar erros não tratados e enviar como JSON
 process.on('uncaughtException', (err) => {
-  logError('Erro não tratado:', err.message);
+  console.error(JSON.stringify({ 
+    error: 'Erro não tratado', 
+    message: err.message,
+    stack: err.stack
+  }));
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  logError('Promessa rejeitada não tratada:', reason);
+  console.error(JSON.stringify({ 
+    error: 'Promessa rejeitada não tratada', 
+    message: String(reason)
+  }));
 });
 
 // Iniciar o servidor com tratamento de portas
