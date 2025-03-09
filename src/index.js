@@ -8,6 +8,17 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Verificar se estamos sendo executados pelo Cursor MCP
+const isMCPMode = process.argv.includes('--mcp') || 
+                  process.env.MCP_MODE === 'true';
+
+// Função de log que só exibe mensagens quando não estiver em modo MCP
+const log = (...args) => {
+  if (!isMCPMode) {
+    console.log(...args);
+  }
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -125,15 +136,20 @@ app.post('/api/chrome-extension/data', (req, res) => {
 
 // Configuração do Socket.IO
 io.on('connection', (socket) => {
-  console.log('Cliente conectado:', socket.id);
+  log('Cliente conectado:', socket.id);
   
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
+    log('Cliente desconectado:', socket.id);
   });
+});
+
+// Rota para verificação de saúde do servidor (health check)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // Iniciar o servidor
 server.listen(PORT, () => {
-  console.log(`Servidor MCP rodando em http://localhost:${PORT}`);
-  console.log('Aguardando conexões...');
+  log(`Servidor MCP rodando em http://localhost:${PORT}`);
+  log('Aguardando conexões...');
 });
