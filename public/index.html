@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Debug Tools - Servidor</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    h1, h2 {
+      color: #2980b9;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status {
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .status.connected {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status.disconnected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      padding: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .data-display {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    .timestamp {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MCP Debug Tools - Servidor</h1>
+    
+    <div id="connectionStatus" class="status disconnected">
+      Status da conexão: Desconectado
+    </div>
+    
+    <h2>Dados Armazenados</h2>
+    
+    <div class="actions">
+      <button id="btnGetConsoleLogs">Visualizar Logs</button>
+      <button id="btnGetConsoleErrors">Visualizar Erros</button>
+      <button id="btnGetNetworkErrorLogs">Visualizar Erros de Rede</button>
+      <button id="btnGetNetworkSuccessLogs">Visualizar Sucessos de Rede</button>
+      <button id="btnGetSelectedElement">Visualizar Elemento Selecionado</button>
+      <button id="btnTakeScreenshot">Visualizar Screenshot</button>
+      <button id="btnWipeLogs">Limpar Todos os Logs</button>
+    </div>
+    
+    <div>
+      <h3 id="dataDisplayTitle">Dados</h3>
+      <div id="dataDisplay" class="data-display">
+        Clique em um dos botões acima para visualizar os dados.
+      </div>
+      <div id="dataTimestamp" class="timestamp"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Conectar ao servidor Socket.IO
+    const socket = io();
+    const connectionStatus = document.getElementById('connectionStatus');
+    const dataDisplay = document.getElementById('dataDisplay');
+    const dataDisplayTitle = document.getElementById('dataDisplayTitle');
+    const dataTimestamp = document.getElementById('dataTimestamp');
+    
+    // Atualizar status de conexão
+    socket.on('connect', () => {
+      connectionStatus.textContent = `Status da conexão: Conectado (ID: ${socket.id})`;
+      connectionStatus.classList.remove('disconnected');
+      connectionStatus.classList.add('connected');
+    });
+    
+    socket.on('disconnect', () => {
+      connectionStatus.textContent = 'Status da conexão: Desconectado';
+      connectionStatus.classList.remove('connected');
+      connectionStatus.classList.add('disconnected');
+    });
+    
+    // Escutar por atualizações de dados
+    socket.on('dataUpdated', (info) => {
+      const { action, timestamp } = info;
+      
+      // Exibir notificação
+      const notification = document.createElement('div');
+      notification.textContent = `Dados atualizados para: ${action} em ${new Date(timestamp).toLocaleTimeString()}`;
+      notification.style.position = 'fixed';
+      notification.style.bottom = '20px';
+      notification.style.right = '20px';
+      notification.style.padding = '10px';
+      notification.style.backgroundColor = '#3498db';
+      notification.style.color = 'white';
+      notification.style.borderRadius = '4px';
+      notification.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+      notification.style.zIndex = '1000';
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 500);
+      }, 3000);
+    });
+    
+    // Função para buscar e exibir dados
+    async function fetchAndDisplayData(endpoint, title) {
+      try {
+        dataDisplayTitle.textContent = title;
+        dataDisplay.textContent = 'Carregando...';
+        
+        const response = await fetch(`/api/mcp/${endpoint}`);
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        dataDisplay.textContent = JSON.stringify(data, null, 2);
+        dataTimestamp.textContent = `Atualizado em: ${new Date().toLocaleString()}`;
+        
+        // Se for screenshot, exibir a imagem
+        if (endpoint === 'takeScreenshot' && data.screenshot) {
+          dataDisplay.innerHTML = `<img src="${data.screenshot}" style="max-width: 100%;" alt="Screenshot" />`;
+        }
+        
+      } catch (error) {
+        dataDisplay.textContent = `Erro ao buscar dados: ${error.message}`;
+      }
+    }
+    
+    // Configurar os botões
+    document.getElementById('btnGetConsoleLogs').addEventListener('click', () => {
+      fetchAndDisplayData('getConsoleLogs', 'Logs do Console');
+    });
+    
+    document.getElementById('btnGetConsoleErrors').addEventListener('click', () => {
+      fetchAndDisplayData('getConsoleErrors', 'Erros do Console');
+    });
+    
+    document.getElementById('btnGetNetworkErrorLogs').addEventListener('click', () => {
+      fetchAndDisplayData('getNetworkErrorLogs', 'Erros de Rede');
+    });
+    
+    document.getElementById('btnGetNetworkSuccessLogs').addEventListener('click', () => {
+      fetchAndDisplayData('getNetworkSuccessLogs', 'Sucessos de Rede');
+    });
+    
+    document.getElementById('btnGetSelectedElement').addEventListener('click', () => {
+      fetchAndDisplayData('getSelectedElement', 'Elemento Selecionado');
+    });
+    
+    document.getElementById('btnTakeScreenshot').addEventListener('click', () => {
+      fetchAndDisplayData('takeScreenshot', 'Screenshot');
+    });
+    
+    document.getElementById('btnWipeLogs').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/mcp/wipeLogs', {
+          method: 'POST'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          dataDisplayTitle.textContent = 'Logs Limpos';
+          dataDisplay.textContent = 'Todos os logs foram limpos com sucesso.';
+          dataTimestamp.textContent = `Atualizado em: ${new Date().toLocaleString()}`;
+        }
+      } catch (error) {
+        dataDisplay.textContent = `Erro ao limpar logs: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
