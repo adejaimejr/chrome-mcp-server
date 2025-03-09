@@ -1,0 +1,113 @@
+{
+  "name": "chrome-debug",
+  "version": "1.0.0",
+  "displayName": "Chrome Debug Tools",
+  "description": "Ferramentas de depuração do navegador Chrome",
+  "transport": "http",
+  "baseURL": "http://localhost:3000/api/mcp",
+  "methods": [
+    {
+      "name": "getConsoleLogs",
+      "description": "Obtém logs do console do navegador",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "getConsoleErrors",
+      "description": "Obtém erros do console do navegador",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "getNetworkErrorLogs",
+      "description": "Obtém logs de erros de rede do navegador",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "getNetworkSuccessLogs",
+      "description": "Obtém logs de requisições de rede bem-sucedidas do navegador",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "takeScreenshot",
+      "description": "Obtém um screenshot da página atual",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "screenshot": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "getSelectedElement",
+      "description": "Obtém informações sobre o elemento HTML selecionado",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "name": "wipeLogs",
+      "description": "Limpa todos os logs armazenados",
+      "parameters": {},
+      "returnType": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  ]
+}
