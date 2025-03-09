@@ -8,6 +8,40 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import net from 'net';
 
+// Interceptar console.log para garantir que todas as saídas sejam JSON válido
+const originalConsoleLog = console.log;
+console.log = function() {
+  // Converter argumentos para string
+  const args = Array.from(arguments).map(arg => 
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+  ).join(' ');
+  
+  // Se já for um JSON válido, enviar como está
+  if (args.trim().startsWith('{') && args.trim().endsWith('}')) {
+    originalConsoleLog(args);
+  } else {
+    // Caso contrário, envolver em um objeto JSON
+    originalConsoleLog(JSON.stringify({ message: args }));
+  }
+};
+
+// Interceptar console.error para garantir que todas as saídas de erro sejam JSON válido
+const originalConsoleError = console.error;
+console.error = function() {
+  // Converter argumentos para string
+  const args = Array.from(arguments).map(arg => 
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+  ).join(' ');
+  
+  // Se já for um JSON válido, enviar como está
+  if (args.trim().startsWith('{') && args.trim().endsWith('}')) {
+    originalConsoleError(args);
+  } else {
+    // Caso contrário, envolver em um objeto JSON
+    originalConsoleError(JSON.stringify({ error: args }));
+  }
+};
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
