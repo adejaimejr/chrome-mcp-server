@@ -66,13 +66,13 @@ Para configurar o servidor MCP no Cursor:
 
 ```
 # Windows
-cmd /c npx github:adejaimejr/chrome-mcp-server --mcp
+cmd /c npx github:adejaimejr/chrome-mcp-server
 
 # Linux/Mac
-npx github:adejaimejr/chrome-mcp-server --mcp
+npx github:adejaimejr/chrome-mcp-server
 ```
 
-**Importante**: O parâmetro `--mcp` é necessário para que o servidor funcione corretamente com o Cursor.
+**Nota**: A partir da versão mais recente, o parâmetro `--mcp` não é mais necessário, pois o servidor agora detecta automaticamente quando está sendo executado pelo Cursor.
 
 ### Solução Mais Simples e Garantida
 
@@ -107,7 +107,9 @@ npm run build
 # node /caminho/para/chrome-mcp-server/dist/mcp-server.js
 ```
 
-## Novidade: Tratamento Automático de Portas
+## Novidades na Versão Mais Recente
+
+### 1. Tratamento Automático de Portas
 
 O servidor agora detecta automaticamente quando a porta padrão (3000) está ocupada e tenta portas alternativas (3001, 3002, etc.) até encontrar uma disponível. Isso resolve o erro `EADDRINUSE: address already in use` que pode ocorrer quando outro serviço já está usando a porta 3000.
 
@@ -116,14 +118,18 @@ Benefícios:
 - O servidor informa automaticamente ao Cursor qual porta está usando
 - Tenta até 10 portas diferentes antes de desistir
 
+### 2. Saída Sempre em Formato JSON
+
+O servidor agora sempre envia respostas em formato JSON válido, mesmo sem o parâmetro `--mcp`. Isso resolve o erro `Unexpected token 'A', "Aguardando"... is not valid JSON` que podia ocorrer na configuração do Cursor.
+
 ## Resolução de Problemas
 
-### Erro: "Falha ao analisar a resposta JSON"
+### Erro: "Falha ao analisar a resposta JSON" ou "Unexpected token... is not valid JSON"
 
-Se você encontrar um erro como "Falha ao analisar a resposta JSON", verifique:
+Se você encontrar um erro relacionado a JSON inválido:
 
-1. Certifique-se de que o comando inclui o parâmetro `--mcp`
-2. Verifique se o Node.js está instalado corretamente
+1. Certifique-se de que está usando a versão mais recente do servidor
+2. Atualize o repositório local com `git pull` e reconstrua com `npm run build`
 3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Mais Simples e Garantida"
 
 ### Erro: "EADDRINUSE: address already in use"
