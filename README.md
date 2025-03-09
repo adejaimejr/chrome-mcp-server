@@ -109,9 +109,19 @@ npm run build
 # node /caminho/completo/para/chrome-mcp-server/dist/mcp-server.js
 ```
 
-## Novidades na Versão Mais Recente
+## Novidades na Versão Mais Recente (v1.2.0)
 
-### 1. Tratamento Automático de Portas
+### 1. Solução Radical para Saída em Formato JSON
+
+Na versão 1.2.0, implementamos uma solução radical para garantir ABSOLUTAMENTE que qualquer saída do servidor seja em formato JSON válido, resolvendo definitivamente o erro `Unexpected token 'A', "Aguardando"... is not valid JSON`.
+
+Esta solução:
+- Intercepta os fluxos de saída `stdout` e `stderr` no nível mais baixo possível
+- Garante que TODA saída, inclusive logs gerados antes da inicialização do aplicativo, seja em formato JSON
+- Converte automaticamente qualquer saída não-JSON para o formato JSON válido
+- Torna impossível para o servidor emitir saídas que não sejam em formato JSON
+
+### 2. Tratamento Automático de Portas
 
 O servidor agora detecta automaticamente quando a porta padrão (3000) está ocupada e tenta portas alternativas (3001, 3002, etc.) até encontrar uma disponível. Isso resolve o erro `EADDRINUSE: address already in use` que pode ocorrer quando outro serviço já está usando a porta 3000.
 
@@ -120,33 +130,19 @@ Benefícios:
 - O servidor informa automaticamente ao Cursor qual porta está usando
 - Tenta até 10 portas diferentes antes de desistir
 
-### 2. Saída Sempre em Formato JSON
-
-O servidor agora sempre envia respostas em formato JSON válido, mesmo sem o parâmetro `--mcp`. Isso resolve o erro `Unexpected token 'A', "Aguardando"... is not valid JSON` que podia ocorrer na configuração do Cursor.
-
 ### 3. Script de Build Compatível com Windows
 
 O script de build agora é compatível com Windows e Linux/Mac, usando módulos ES6 para criar diretórios e copiar arquivos em vez de comandos específicos do sistema operacional. Isso resolve o erro `mkdir -p` que ocorria ao executar `npm run build` no Windows.
-
-### 4. Interceptação Global de Console.log/error
-
-Implementamos uma interceptação global de todas as funções de console para garantir que absolutamente todas as saídas sejam em formato JSON válido. Isso resolve definitivamente o erro `Unexpected token 'A', "Aguardando"... is not valid JSON` que ocorria no Cursor.
-
-Esta solução:
-- Intercepta todas as chamadas para console.log e console.error
-- Verifica se a saída já é um JSON válido
-- Se não for, envolve automaticamente em um objeto JSON
-- Garante compatibilidade 100% com o Cursor MCP
 
 ## Resolução de Problemas
 
 ### Erro: "Falha ao analisar a resposta JSON" ou "Unexpected token... is not valid JSON"
 
-Se você encontrar um erro relacionado a JSON inválido:
+Este erro deve estar completamente resolvido na versão 1.2.0. Se ainda encontrar o erro:
 
-1. Certifique-se de que está usando a versão mais recente do servidor (v1.1.0+)
+1. Certifique-se de que está usando a versão 1.2.0 ou superior
 2. Atualize o repositório local com `git pull` e reconstrua com `npm run build`
-3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Específica para Instalação Local"
+3. Verifique se está usando o caminho correto para o arquivo `mcp-server.js`
 
 ### Erro: "EADDRINUSE: address already in use"
 
