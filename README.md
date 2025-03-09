@@ -1,97 +1,88 @@
 # Chrome MCP Server
 
-Este é um servidor MCP (Model Context Protocol) que permite a integração entre a extensão Chrome "MCP Debug Tools" e o Claude AI no Cursor.
+Um servidor Node.js que se integra com a extensão Chrome DevTools para fornecer funcionalidades de depuração e monitoramento para o Cursor AI.
 
-## Funcionalidades
+## Funcionalidade
 
-- Recebe dados da extensão Chrome via API RESTful
-- Disponibiliza estes dados como ferramentas MCP para o Claude AI
-- Interface web para visualizar os dados armazenados
-- Notificações em tempo real via Socket.IO
+Este servidor atua como uma ponte entre a extensão Chrome DevTools e o Cursor AI, permitindo:
+
+- Capturar logs do console
+- Capturar erros do console
+- Monitorar requisições de rede (sucessos e erros)
+- Capturar screenshots
+- Inspecionar elementos selecionados
+- Limpar logs
 
 ## Instalação e Uso
 
-### Opção 1: Usar diretamente do GitHub (recomendado)
+Existem várias opções para executar o servidor:
 
-Você pode executar o servidor diretamente do GitHub sem instalar:
+### Opção 1: Executar diretamente do GitHub
 
 ```bash
-# No Windows
+# Windows
 cmd /c npx github:adejaimejr/chrome-mcp-server
 
-# No Linux/Mac
+# Linux/Mac
 npx github:adejaimejr/chrome-mcp-server
 ```
 
-### Opção 2: Instalar globalmente do GitHub
+### Opção 2: Instalar globalmente
 
 ```bash
+# Instalar globalmente
 npm install -g github:adejaimejr/chrome-mcp-server
+
+# Executar
 chrome-mcp-server
 ```
 
-### Opção 3: Instalar a partir do npm (se publicado)
+### Opção 3: Publicar no npm
 
-Se você publicar este pacote no npm, poderá usá-lo assim:
+Se você preferir usar o formato de comando `npx @scope/package`, você pode publicar este pacote no npm:
 
+Para publicar sem escopo:
 ```bash
-# Publicar no npm (uma única vez)
 npm login
 npm publish
-
-# Depois de publicado, usar com:
-# No Windows
-cmd /c npx chrome-mcp-server
-
-# No Linux/Mac
-npx chrome-mcp-server
 ```
+Depois poderá usar: `npx chrome-mcp-server`
 
-Para publicar com um escopo (como @adejaimejr/chrome-mcp-server):
-
+Para publicar com escopo:
 ```bash
-# Modificar o nome no package.json para "@adejaimejr/chrome-mcp-server"
+# Modifique o nome no package.json para "@adejaimejr/chrome-mcp-server"
 npm publish --access public
-
-# Depois de publicado, usar com:
-# No Windows
-cmd /c npx @adejaimejr/chrome-mcp-server
-
-# No Linux/Mac
-npx @adejaimejr/chrome-mcp-server
 ```
+Depois poderá usar: `npx @adejaimejr/chrome-mcp-server`
 
 ## Configuração no Cursor
 
-Para configurar o Cursor para usar este servidor:
+Para configurar o servidor MCP no Cursor:
 
-1. Abra Configurações > MCP Servers
-2. Clique em "Add new MCP server"
-3. Preencha os campos:
-   - Nome: Chrome Debug Tools
-   - Tipo: command
-   - Comando: 
-     - Windows: `cmd /c npx github:adejaimejr/chrome-mcp-server`
-     - Linux/Mac: `npx github:adejaimejr/chrome-mcp-server`
+1. Abra o Cursor
+2. Vá para Configurações (ícone de engrenagem)
+3. Navegue até "Extensões" > "MCP"
+4. Adicione um novo servidor MCP com o comando:
 
-**Importante**: O servidor detecta automaticamente quando está sendo executado pelo Cursor e entra em modo MCP, suprimindo mensagens de log que podem interferir na comunicação.
+```
+# Windows
+cmd /c npx github:adejaimejr/chrome-mcp-server --mcp
 
-### Nota sobre formatos de comando
+# Linux/Mac
+npx github:adejaimejr/chrome-mcp-server --mcp
+```
 
-Existem diferentes formatos para referenciar pacotes npm:
-
-- `npx github:adejaimejr/chrome-mcp-server`: Instala diretamente do GitHub
-- `npx chrome-mcp-server`: Instala do registro npm (requer publicação prévia)
-- `npx @adejaimejr/chrome-mcp-server`: Instala um pacote com escopo do npm (requer publicação prévia)
-- `npx @adejaimejr/chrome-mcp-server@1.0.0`: Especifica uma versão exata
-
-O formato usado pelo @agentdeskai/browser-tools-mcp (`npx @agentdeskai/browser-tools-mcp@1.1.0`) indica que o pacote está publicado no npm com um escopo e especifica a versão 1.1.0.
-
-## Solução de Problemas
-
-Se você encontrar o erro "Failed to create client", tente uma das seguintes soluções:
+**Importante**: O parâmetro `--mcp` é necessário para que o servidor funcione corretamente com o Cursor.
 
 ### Solução Mais Simples e Garantida
+
+Para o seu caso específico, com o arquivo em `C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server\dist\mcp-server.js`, configure o Cursor com o seguinte comando:
+
+```
+node C:\Users\Adejaime\Desktop\2025-dev\chrome-mcp-server\dist\mcp-server.js
+```
+
+Importante: No Windows, você pode usar tanto barras invertidas (`\`) quanto barras normais (`/`) no caminho.
 
 Clone o repositório localmente e use o caminho direto para o arquivo executável:
 
@@ -108,76 +99,65 @@ npm install
 # 4. Construa o executável
 npm run build
 
-# 5. Configure no Cursor com o caminho absoluto para o arquivo mcp-server.js
+# 5. Configure o Cursor com o caminho absoluto para o arquivo mcp-server.js
 # Exemplo no Windows:
-C:/caminho/para/chrome-mcp-server/dist/mcp-server.js
+# node C:\caminho\para\chrome-mcp-server\dist\mcp-server.js
 
 # Exemplo no Linux/Mac:
-/caminho/completo/para/chrome-mcp-server/dist/mcp-server.js
+# node /caminho/para/chrome-mcp-server/dist/mcp-server.js
 ```
 
-Esta abordagem elimina problemas com o npm e garante que você está usando exatamente o código do repositório.
+## Novidade: Tratamento Automático de Portas
 
-### Solução 1: Instalar globalmente e usar o caminho completo
+O servidor agora detecta automaticamente quando a porta padrão (3000) está ocupada e tenta portas alternativas (3001, 3002, etc.) até encontrar uma disponível. Isso resolve o erro `EADDRINUSE: address already in use` que pode ocorrer quando outro serviço já está usando a porta 3000.
 
-```bash
-# Instalar globalmente
-npm install -g github:adejaimejr/chrome-mcp-server
+Benefícios:
+- Não é necessário encerrar outros serviços que estejam usando a porta 3000
+- O servidor informa automaticamente ao Cursor qual porta está usando
+- Tenta até 10 portas diferentes antes de desistir
 
-# Configurar no Cursor com o caminho completo
-# Windows:
-node C:/Users/[Seu_Usuario]/AppData/Roaming/npm/node_modules/chrome-mcp-server/dist/mcp-server.js
+## Resolução de Problemas
 
-# Linux/Mac:
-node /usr/local/lib/node_modules/chrome-mcp-server/dist/mcp-server.js
-```
+### Erro: "Falha ao analisar a resposta JSON"
 
-### Solução 2: Verificar a instalação do Node.js
+Se você encontrar um erro como "Falha ao analisar a resposta JSON", verifique:
 
-Certifique-se de que o Node.js está instalado e acessível no PATH do sistema.
+1. Certifique-se de que o comando inclui o parâmetro `--mcp`
+2. Verifique se o Node.js está instalado corretamente
+3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Mais Simples e Garantida"
 
-## Como Usar
+### Erro: "EADDRINUSE: address already in use"
 
-### 1. Configuração Completa
+Este erro ocorre quando a porta 3000 já está sendo usada por outro processo. A nova versão do servidor resolve isso automaticamente tentando portas alternativas.
 
-1. Instale a extensão Chrome "MCP Debug Tools"
-2. Inicie o servidor MCP com um dos comandos acima
-3. Configure o Cursor para usar o servidor MCP
-4. Use a extensão para capturar dados do navegador
-5. Os dados estarão disponíveis para o Claude AI como ferramentas MCP
+Se ainda encontrar problemas:
+1. Verifique se você está usando a versão mais recente do servidor
+2. Tente encerrar manualmente o processo que está usando a porta 3000
+3. Defina uma porta específica usando a variável de ambiente PORT:
+   ```
+   # Windows
+   set PORT=3001 && node C:\caminho\para\mcp-server.js
+   
+   # Linux/Mac
+   PORT=3001 node /caminho/para/mcp-server.js
+   ```
 
-### 2. Interface Web
+## Como Funciona
 
-Você pode acessar http://localhost:3000 para visualizar os dados armazenados e monitorar as atualizações em tempo real.
-
-## Comunicação
-
-### Da Extensão para o Servidor
-
-A extensão envia dados para o servidor via POST para `/api/chrome-extension/data` com o seguinte formato:
-
-```json
-{
-  "action": "getConsoleLogs",
-  "data": {
-    "logs": [...]
-  }
-}
-```
-
-### Do Servidor para o Claude AI
-
-O Claude AI pode acessar os dados via GET para `/api/mcp/getConsoleLogs` e outras rotas similares.
+1. A extensão Chrome DevTools coleta informações do navegador
+2. A extensão envia esses dados para o servidor MCP local
+3. O servidor armazena os dados e os disponibiliza via API RESTful
+4. O Claude AI no Cursor acessa esses dados através das ferramentas MCP
 
 ## Ferramentas MCP Disponíveis
 
-- `getConsoleLogs` - Obtém logs do console
-- `getConsoleErrors` - Obtém erros do console
-- `getNetworkErrorLogs` - Obtém erros de rede
-- `getNetworkSuccessLogs` - Obtém sucessos de rede
-- `takeScreenshot` - Obtém screenshot da página
-- `getSelectedElement` - Obtém elemento HTML selecionado
-- `wipeLogs` - Limpa todos os logs
+- `getConsoleLogs`: Obtém logs do console
+- `getConsoleErrors`: Obtém erros do console
+- `getNetworkErrorLogs`: Obtém logs de erros de rede
+- `getNetworkSuccessLogs`: Obtém logs de sucesso de rede
+- `takeScreenshot`: Captura uma screenshot da página
+- `getSelectedElement`: Obtém informações sobre o elemento selecionado
+- `wipeLogs`: Limpa todos os logs armazenados
 
 ## Requisitos
 
@@ -187,4 +167,4 @@ O Claude AI pode acessar os dados via GET para `/api/mcp/getConsoleLogs` e outra
 
 ## Notas de Segurança
 
-Este servidor é destinado apenas para uso de desenvolvimento. Não exponha este servidor à internet pública sem implementar medidas de segurança adicionais.
+Este servidor é destinado apenas para uso local durante o desenvolvimento. Não exponha este servidor à internet pública sem medidas adicionais de segurança.
