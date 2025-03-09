@@ -6,6 +6,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import net from 'net';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,7 +31,9 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+// Definir portas para tentar, começando com a padrão
+const DEFAULT_PORT = process.env.PORT || 3000;
+const MAX_PORT_ATTEMPTS = 10; // Tentar até 10 portas diferentes
 
 // Armazenamento de dados em memória (pode ser substituído por um banco de dados em produção)
 const storage = {
@@ -150,8 +153,48 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Iniciar o servidor
-server.listen(PORT, () => {
-  log(`Servidor MCP rodando em http://localhost:${PORT}`);
-  log('Aguardando conexões...');
-});
+// Função para verificar se uma porta está disponível
+function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const tester = net.createServer()
+      .once('error', () => resolve(false))
+      .once('listening', () => {
+        tester.once('close', () => resolve(true)).close();
+      })
+      .listen(port);
+  });
+}
+
+// Função para iniciar o servidor com tentativas de portas alternativas
+async function startServer() {
+  let currentPort = DEFAULT_PORT;
+  let attempts = 0;
+  
+  while (attempts < MAX_PORT_ATTEMPTS) {
+    const available = await isPortAvailable(currentPort);
+    
+    if (available) {
+      server.listen(currentPort, () => {
+        log(`Servidor MCP rodando em http://localhost:${currentPort}`);
+        
+        // Se estiver em modo MCP, imprimir apenas a porta em formato JSON para o Cursor capturar
+        if (isMCPMode) {
+          console.log(JSON.stringify({ port: currentPort }));
+        } else {
+          log('Aguardando conexões...');
+        }
+      });
+      return;
+    }
+    
+    log(`Porta ${currentPort} já está em uso, tentando próxima...`);
+    currentPort++;
+    attempts++;
+  }
+  
+  console.error(`Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.`);
+  process.exit(1);
+}
+
+// Iniciar o servidor com tratamento de portas
+startServer();
