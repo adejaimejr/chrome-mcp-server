@@ -128,13 +128,23 @@ O servidor agora sempre envia respostas em formato JSON válido, mesmo sem o par
 
 O script de build agora é compatível com Windows e Linux/Mac, usando módulos ES6 para criar diretórios e copiar arquivos em vez de comandos específicos do sistema operacional. Isso resolve o erro `mkdir -p` que ocorria ao executar `npm run build` no Windows.
 
+### 4. Interceptação Global de Console.log/error
+
+Implementamos uma interceptação global de todas as funções de console para garantir que absolutamente todas as saídas sejam em formato JSON válido. Isso resolve definitivamente o erro `Unexpected token 'A', "Aguardando"... is not valid JSON` que ocorria no Cursor.
+
+Esta solução:
+- Intercepta todas as chamadas para console.log e console.error
+- Verifica se a saída já é um JSON válido
+- Se não for, envolve automaticamente em um objeto JSON
+- Garante compatibilidade 100% com o Cursor MCP
+
 ## Resolução de Problemas
 
 ### Erro: "Falha ao analisar a resposta JSON" ou "Unexpected token... is not valid JSON"
 
 Se você encontrar um erro relacionado a JSON inválido:
 
-1. Certifique-se de que está usando a versão mais recente do servidor
+1. Certifique-se de que está usando a versão mais recente do servidor (v1.1.0+)
 2. Atualize o repositório local com `git pull` e reconstrua com `npm run build`
 3. Tente usar o caminho absoluto para o arquivo `mcp-server.js` como mostrado na seção "Solução Específica para Instalação Local"
 
