@@ -8,10 +8,11 @@
     "chrome-mcp-server": "./dist/mcp-server.js"
   },
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node dist/mcp-server.js",
     "mcp": "node src/index.js --mcp",
-    "build": "mkdir -p dist && cp src/index.js dist/mcp-server.js && chmod +x dist/mcp-server.js",
-    "prepublishOnly": "npm run build"
+    "build": "node scripts/build.js",
+    "dev": "nodemon src/index.js",
+    "publish": "npm publish"
   },
   "author": "",
   "license": "MIT",
