@@ -126,7 +126,7 @@ O servidor agora sempre envia respostas em formato JSON válido, mesmo sem o par
 
 ### 3. Script de Build Compatível com Windows
 
-O script de build agora é compatível com Windows e Linux/Mac, usando o Node.js para criar diretórios e copiar arquivos em vez de comandos específicos do sistema operacional. Isso resolve o erro `mkdir -p` que ocorria ao executar `npm run build` no Windows.
+O script de build agora é compatível com Windows e Linux/Mac, usando módulos ES6 para criar diretórios e copiar arquivos em vez de comandos específicos do sistema operacional. Isso resolve o erro `mkdir -p` que ocorria ao executar `npm run build` no Windows.
 
 ## Resolução de Problemas
 
@@ -163,6 +163,27 @@ Se você encontrar erros relacionados a comandos Unix ao executar `npm run build
 3. Se o problema persistir, você pode criar manualmente o arquivo:
    - Copie o conteúdo de `src/index.js` para um novo arquivo `dist/mcp-server.js`
    - Adicione `#!/usr/bin/env node` no início do arquivo
+
+### Erro: "require is not defined in ES module scope"
+
+Se você encontrar este erro ao executar `npm run build`:
+
+1. Certifique-se de que está usando a versão mais recente do repositório, que usa a sintaxe de módulos ES6 no script de build
+2. Execute `git pull` para obter as últimas atualizações
+3. Se o problema persistir, você pode criar manualmente o arquivo:
+   ```bash
+   # 1. Crie a pasta dist se não existir
+   mkdir -p dist
+   
+   # 2. Copie o arquivo src/index.js para dist/mcp-server.js
+   # No Windows:
+   copy src\index.js dist\mcp-server.js
+   
+   # No Linux/Mac:
+   cp src/index.js dist/mcp-server.js
+   
+   # 3. Edite o arquivo dist/mcp-server.js e adicione #!/usr/bin/env node no início
+   ```
 
 ## Como Funciona
 
