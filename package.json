@@ -1,6 +1,6 @@
 {
   "name": "chrome-mcp-server",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Servidor MCP para integração entre extensão Chrome e Claude",
   "main": "src/index.js",
   "type": "module",
