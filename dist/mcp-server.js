@@ -13,7 +13,8 @@ const __dirname = dirname(__filename);
 
 // Verificar se estamos sendo executados pelo Cursor MCP
 const isMCPMode = process.argv.includes('--mcp') || 
-                  process.env.MCP_MODE === 'true';
+                  process.env.MCP_MODE === 'true' ||
+                  process.env.CURSOR_MCP === 'true';
 
 // Função de log que só exibe mensagens quando não estiver em modo MCP
 const log = (...args) => {
@@ -175,12 +176,12 @@ async function startServer() {
     
     if (available) {
       server.listen(currentPort, () => {
-        log(`Servidor MCP rodando em http://localhost:${currentPort}`);
+        // Sempre enviar a porta em formato JSON para o Cursor capturar
+        console.log(JSON.stringify({ port: currentPort, status: "running" }));
         
-        // Se estiver em modo MCP, imprimir apenas a porta em formato JSON para o Cursor capturar
-        if (isMCPMode) {
-          console.log(JSON.stringify({ port: currentPort }));
-        } else {
+        // Logs adicionais apenas se não estiver em modo MCP
+        if (!isMCPMode) {
+          log(`Servidor MCP rodando em http://localhost:${currentPort}`);
           log('Aguardando conexões...');
         }
       });
@@ -192,7 +193,10 @@ async function startServer() {
     attempts++;
   }
   
-  console.error(`Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.`);
+  // Erro em formato JSON para o Cursor
+  console.error(JSON.stringify({ 
+    error: `Não foi possível encontrar uma porta disponível após ${MAX_PORT_ATTEMPTS} tentativas.` 
+  }));
   process.exit(1);
 }
 
