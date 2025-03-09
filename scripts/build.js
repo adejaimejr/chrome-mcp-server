@@ -1,6 +1,12 @@
 // Script de build compatível com Windows e Linux/Mac
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+
+// Obter o diretório atual em módulos ES
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Garantir que o diretório dist existe
 const distDir = path.join(__dirname, '..', 'dist');
@@ -34,7 +40,6 @@ if (process.platform !== 'win32') {
   console.log('Definindo permissões de execução...');
   try {
     // Tornar o arquivo executável no Linux/Mac
-    const { execSync } = require('child_process');
     execSync(`chmod +x "${destFile}"`);
   } catch (error) {
     console.warn('Aviso: Não foi possível definir permissões de execução.');
