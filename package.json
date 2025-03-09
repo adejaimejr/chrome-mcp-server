@@ -5,11 +5,13 @@
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "chrome-mcp-server": "./bin/cli.js"
+    "chrome-mcp-server": "./dist/mcp-server.js"
   },
   "scripts": {
     "start": "node src/index.js",
-    "mcp": "node src/index.js"
+    "mcp": "node src/index.js --mcp",
+    "build": "mkdir -p dist && cp src/index.js dist/mcp-server.js && chmod +x dist/mcp-server.js",
+    "prepublishOnly": "npm run build"
   },
   "author": "",
   "license": "MIT",
