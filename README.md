@@ -51,7 +51,19 @@ Para configurar o Cursor para usar este servidor:
 3. Preencha os campos:
    - Nome: Chrome Debug Tools
    - Tipo: command
-   - Comando: `cmd /c npx github:adejaimejr/chrome-mcp-server` (Windows) ou `npx github:adejaimejr/chrome-mcp-server` (Linux/Mac)
+   - Comando: 
+     - Windows: `cmd /c npx github:adejaimejr/chrome-mcp-server --mcp`
+     - Linux/Mac: `npx github:adejaimejr/chrome-mcp-server --mcp`
+
+**Importante**: O parâmetro `--mcp` é essencial para que o servidor funcione corretamente com o Cursor, pois ele suprime mensagens de log que podem interferir na comunicação.
+
+## Solução de Problemas
+
+Se você encontrar o erro "Unexpected token 'A', 'Aguardando'... is not valid JSON", certifique-se de:
+
+1. Adicionar o parâmetro `--mcp` ao comando
+2. Verificar se o Node.js está instalado e acessível no PATH
+3. Tentar executar o comando diretamente no terminal para verificar se funciona
 
 ## Como Usar
 
